@@ -1,0 +1,43 @@
+.zoom-text-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.zoom-text {
+  text-align: center;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.o-right-text {
+  font-size: clamp(3rem, 12vw, 6rem);
+  color: #000000;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  font-family: 'IBM Plex Serif', serif;
+  transition: color 0.3s ease;
+}
+
+.lucas-text {
+  font-size: clamp(3rem, 12vw, 6rem);
+  color: #000000;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  font-family: 'IBM Plex Serif', serif;
+  transition: all 0.8s ease-out;
+  display: inline-block;
+  transform-origin: center center;
+  position: relative;
+  z-index: 10;
+}
+
+.lucas-text.lucas-emphasize {
+  color: #000000 !important;
+  transform: scale(2.5) !important;
+  text-shadow: 0 0 30px rgba(0, 0, 0, 0.5) !important;
+  z-index: 1000 !important;
+}
