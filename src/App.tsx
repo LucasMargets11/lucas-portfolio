@@ -8,63 +8,20 @@ function App() {
   const [showIntro, setShowIntro] = useState(true);
 
   const handleIntroComplete = () => {
-    console.log('🏠 App: Intro complete, switching to Home'); // Debug
-    console.log('🔍 App: Current showIntro state:', showIntro);
+    console.log('🏠 App: Intro complete, switching to Home');
     setShowIntro(false);
-    console.log('🔄 App: showIntro set to false');
   };
 
-  // Force cleanup after intro completes
+  // Auto-skip intro after 12 seconds as fallback
   useEffect(() => {
-    console.log('📱 App useEffect triggered, showIntro:', showIntro);
-    if (!showIntro) {
-      console.log('🏠 Home is now active, cleaning up paint effects'); // Debug
-      
-      // Cleanup múltiple más agresivo
-      const cleanupPaintEffects = () => {
-        console.log('🧹 Running cleanup function...');
-        
-        // Remover paint containers
-        const paintContainers = document.querySelectorAll('.paint-effect-container');
-        console.log('🎨 Found paint containers:', paintContainers.length);
-        paintContainers.forEach(el => {
-          (el as HTMLElement).style.display = 'none';
-          el.remove();
-        });
-        
-        // Remover overlays
-        const overlays = document.querySelectorAll('.paint-overlay');
-        console.log('🖼️ Found overlays:', overlays.length);
-        overlays.forEach(el => {
-          (el as HTMLElement).style.opacity = '0';
-          (el as HTMLElement).style.display = 'none';
-          el.remove();
-        });
-        
-        // Remover intro containers
-        const introElements = document.querySelectorAll('.intro-container, .zoom-text-container');
-        console.log('📝 Found intro elements:', introElements.length);
-        introElements.forEach(el => el.remove());
-        
-        // Forzar cleanup de cualquier elemento con z-index alto que pueda estar bloqueando
-        const highZElements = document.querySelectorAll('[style*="z-index"]');
-        console.log('🔢 Found high z-index elements:', highZElements.length);
-        highZElements.forEach(el => {
-          const style = (el as HTMLElement).style;
-          if (style.zIndex && parseInt(style.zIndex) > 100 && parseInt(style.zIndex) < 10000) {
-            console.log('🚮 Removing high z-index element:', el.className);
-            (el as HTMLElement).style.display = 'none';
-          }
-        });
-        
-        console.log('✅ Cleanup completed');
-      };
-      
-      // Ejecutar cleanup inmediatamente y después de un pequeño delay
-      cleanupPaintEffects();
-      setTimeout(cleanupPaintEffects, 100);
-      setTimeout(cleanupPaintEffects, 500);
-    }
+    const fallbackTimer = setTimeout(() => {
+      if (showIntro) {
+        console.log('⏰ Fallback timer triggered, skipping to Home');
+        setShowIntro(false);
+      }
+    }, 12000); // 12 seconds maximum for the massive zoom animation
+
+    return () => clearTimeout(fallbackTimer);
   }, [showIntro]);
 
   return (

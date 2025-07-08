@@ -4,35 +4,17 @@ import './Home.css';
 
 const Home: React.FC = () => {
   
-  // Cleanup adicional cuando el componente se monta
   useEffect(() => {
     console.log('🏠 Home: Component mounting...');
     
-    // Cleanup agresivo de elementos de pintura
-    const forceCleanup = () => {
-      console.log('🧹 Home: Running force cleanup');
-      const paintElements = document.querySelectorAll('.paint-effect-container, .paint-overlay, .paint-burst');
-      console.log('🎨 Home: Found paint elements to remove:', paintElements.length);
-      paintElements.forEach(el => {
-        (el as HTMLElement).style.display = 'none';
-        (el as HTMLElement).style.opacity = '0';
-        el.remove();
-      });
-      
-      // Verificar que el home se está mostrando
-      const homeElement = document.querySelector('.home-container');
-      if (homeElement) {
-        console.log('✅ Home: Home container found and visible');
-        (homeElement as HTMLElement).style.display = 'flex';
-        (homeElement as HTMLElement).style.zIndex = '10000';
-        (homeElement as HTMLElement).style.opacity = '1';
-      }
-    };
+    // Solo verificar que el home se está mostrando, sin cleanup agresivo
+    const homeElement = document.querySelector('.home-container');
+    if (homeElement) {
+      console.log('✅ Home: Home container found and visible');
+    }
     
-    forceCleanup();
-    setTimeout(forceCleanup, 100);
     setTimeout(() => {
-      console.log('🏠 Home: Component fully mounted and cleaned');
+      console.log('🏠 Home: Component fully mounted');
     }, 200);
   }, []);
   
@@ -44,8 +26,12 @@ const Home: React.FC = () => {
       transition={{ duration: 0.8, delay: 0.1 }}
       style={{ 
         backgroundColor: '#000000',
-        position: 'relative',
-        zIndex: 10000 // Z-index muy alto
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        zIndex: 10000
       }}
     >
       {/* Header */}

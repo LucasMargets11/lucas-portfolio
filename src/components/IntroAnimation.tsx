@@ -1,8 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import ZoomText from './ZoomText';
-import PaintEffect from './PaintEffect';
-import Debug from './Debug';
+import { useSpring, animated } from '@react-spring/web';
 import './IntroAnimation.css';
 
 interface IntroAnimationProps {
@@ -11,150 +9,130 @@ interface IntroAnimationProps {
 
 const IntroAnimation: React.FC<IntroAnimationProps> = ({ onComplete }) => {
   const [currentStep, setCurrentStep] = useState(0);
-  const [isComplete, setIsComplete] = useState(false);
   const [isZooming, setIsZooming] = useState(false);
-  const [isPainting, setIsPainting] = useState(false);
-  const [lucasPosition, setLucasPosition] = useState({ x: 0, y: 0 });
+  const [showBlackScreen, setShowBlackScreen] = useState(false);
+
+  // Spring animation for the zoom effect
+  const zoomSpring = useSpring({
+    transform: isZooming ? 'scale(50)' : 'scale(1)',
+    opacity: isZooming ? 0.3 : 1,
+    config: { duration: 1500, easing: t => t * t * (3 - 2 * t) } // More dramatic easing
+  });
+
+  // Spring animation for background transition
+  const backgroundSpring = useSpring({
+    backgroundColor: showBlackScreen ? '#000000' : '#ffffff',
+    config: { duration: 800 }
+  });
 
   useEffect(() => {
     const timeouts: ReturnType<typeof setTimeout>[] = [];
 
-    // Step 1: "WHAT IS THIS" - aparece inmediatamente y dura ~3 segundos
+    // Step 1: "WHAT IS THIS" - 2 seconds
     timeouts.push(setTimeout(() => setCurrentStep(1), 100));
     
-    // Step 2: "WHAT U WAITING" - aparece después de 3.5 segundos y dura ~3 segundos
-    timeouts.push(setTimeout(() => setCurrentStep(2), 3500));
+    // Step 2: "WHAT U WAITING" - 2 seconds more
+    timeouts.push(setTimeout(() => setCurrentStep(2), 2200));
     
-    // Step 3: "O RIGHT, IM LUCAS" - aparece después de 7 segundos
-    timeouts.push(setTimeout(() => setCurrentStep(3), 7000));
+    // Step 3: "O RIGHT, IM LUCAS" - 2 seconds more
+    timeouts.push(setTimeout(() => setCurrentStep(3), 4400));
     
-    // Énfasis en LUCAS - después de 9.5 segundos (1 segundo más)
-    timeouts.push(setTimeout(() => setIsZooming(true), 9500));
+    // Start zoom effect on LUCAS - 1.5 seconds after step 3
+    timeouts.push(setTimeout(() => {
+      console.log('🔍 Starting LUCAS zoom effect');
+      setIsZooming(true);
+    }, 5900));
     
-    // Efecto de pintura - después de 11.5 segundos
-    timeouts.push(setTimeout(() => setIsPainting(true), 11500));
+    // Transition to black screen during zoom (earlier for more dramatic effect)
+    timeouts.push(setTimeout(() => {
+      console.log('🖤 Transitioning to black screen');
+      setShowBlackScreen(true);
+    }, 6200));
+    
+    // Complete the intro after zoom effect (longer duration for the massive zoom)
+    timeouts.push(setTimeout(() => {
+      console.log('🎨 IntroAnimation complete, calling onComplete');
+      onComplete();
+    }, 8000));
 
     return () => timeouts.forEach(clearTimeout);
-  }, []);
-
-  const handlePaintComplete = () => {
-    console.log('🎨 Paint complete, calling onComplete'); // Debug
-    console.log('🔄 Current states:', { currentStep, isZooming, isPainting, isComplete });
-    
-    setIsComplete(true);
-    setIsPainting(false); // Reset state
-    setIsZooming(false); // Reset state
-    setCurrentStep(0); // Reset state
-    
-    // Cleanup directo del DOM antes de llamar onComplete
-    const paintElements = document.querySelectorAll('.paint-effect-container, .paint-overlay, .paint-burst');
-    console.log('🧹 Cleaning up paint elements:', paintElements.length);
-    paintElements.forEach(el => {
-      (el as HTMLElement).style.display = 'none';
-      (el as HTMLElement).style.opacity = '0';
-      el.remove();
-    });
-    
-    // Llamar onComplete después de un breve delay para asegurar cleanup
-    setTimeout(() => {
-      console.log('✅ Calling onComplete to switch to Home');
-      onComplete();
-    }, 100);
-  };
-
-  // Si la animación está completa, no renderizar nada (permitir desmontaje completo)
-  if (isComplete) {
-    console.log('IntroAnimation: returning null'); // Debug
-    return null;
-  }
+  }, [onComplete]);
 
   return (
-    <motion.div
+    <animated.div
       className="intro-container"
-      initial={{ opacity: 0, backgroundColor: "#ffffff" }}
-      animate={{ 
-        opacity: 1, 
-        backgroundColor: isZooming ? "#000000" : "#ffffff" 
-      }}
-      transition={{ 
-        opacity: { duration: 1 },
-        backgroundColor: { 
-          duration: isZooming ? 0.6 : 0,
-          delay: isZooming ? 0.4 : 0
-        }
+      style={{
+        ...backgroundSpring,
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        width: '100vw',
+        height: '100vh',
+        zIndex: 9999,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
       }}
     >
-      {/* Debug components */}
-      <Debug step="intro-render" data={{ currentStep, isZooming, isPainting, isComplete }} />
-      
-      <AnimatePresence mode="wait">
-        {currentStep === 1 && !isPainting && (
-          <motion.div
-            key="step1"
-            className="intro-text step-1"
-            initial={{ opacity: 0, scale: 0.8, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.8, y: -20 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
-          >
-            <span className="typewriter">WHAT IS THIS</span>
-          </motion.div>
-        )}
-
-        {currentStep === 2 && !isPainting && (
-          <motion.div
-            key="step2"
-            className="intro-text step-2"
-            initial={{ opacity: 0, x: -20, skewX: 0 }}
-            animate={{ 
-              opacity: 1, 
-              x: 0, 
-              skewX: [0, -5, 5, 0] 
-            }}
-            exit={{ opacity: 0, scale: 0.8, y: -20 }}
-            transition={{ 
-              duration: 0.8,
-              skewX: {
-                repeat: 2,
-                duration: 0.1
-              }
-            }}
-          >
-            WHAT U WAITING
-          </motion.div>
-        )}
-
-        {currentStep === 3 && !isPainting && (
-          <motion.div
-            key="step3"
-            className="intro-text-container step-3"
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ 
-              opacity: 1, 
-              scale: 1 
-            }}
-            exit={{ opacity: 0, scale: 0.8 }}
-            transition={{ duration: 0.7, ease: "easeOut" }}
-          >
-            <ZoomText 
-              isZooming={isZooming}
-              onLucasPosition={setLucasPosition}
-              className="intro-text intro-text-large lucas-name"
-            />
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Efecto de pintura - solo si está activo */}
-      {isPainting && !isComplete && (
-        <PaintEffect 
-          isActive={isPainting}
-          triggerPosition={lucasPosition}
-          onComplete={handlePaintComplete}
-          color="#000000"
-        />
-      )}
-    </motion.div>
+      <div className="intro-text-container">
+        <AnimatePresence mode="wait">
+          {currentStep === 1 && (
+            <motion.div
+              key="step1"
+              className="step-1"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.5 }}
+            >
+              <h1 className="intro-text">WHAT IS THIS</h1>
+            </motion.div>
+          )}
+          
+          {currentStep === 2 && (
+            <motion.div
+              key="step2"
+              className="step-2"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.5 }}
+            >
+              <h1 className="intro-text">WHAT U WAITING</h1>
+            </motion.div>
+          )}
+          
+          {currentStep === 3 && (
+            <motion.div
+              key="step3"
+              className="step-3"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.8 }}
+              transition={{ duration: 0.5 }}
+              style={{ textAlign: 'center' }}
+            >
+              <h2 className="intro-text intro-text-small">O RIGHT,</h2>
+              <animated.h1 
+                className="intro-text intro-text-large lucas-name"
+                style={{
+                  ...zoomSpring,
+                  color: showBlackScreen ? '#ffffff' : '#000000',
+                  position: 'relative',
+                  zIndex: 10000,
+                  fontWeight: 'bold',
+                  letterSpacing: isZooming ? '0.3em' : '0.15em',
+                  textShadow: isZooming ? '0 0 50px rgba(255, 255, 255, 0.5)' : 'none',
+                  transformOrigin: 'center center'
+                }}
+              >
+                IM LUCAS
+              </animated.h1>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </animated.div>
   );
 };
 
