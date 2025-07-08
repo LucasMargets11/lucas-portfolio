@@ -11,7 +11,7 @@
   justify-content: center;
   z-index: 9999;
   font-family: 'IBM Plex Serif', 'Crimson Text', 'Georgia', serif;
-  overflow: hidden;
+  overflow: hidden !important;
 }
 
 .intro-text {
@@ -89,27 +89,7 @@
   position: relative;
 }
 
-.step-1::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(0, 0, 0, 0.05) 50%,
-    transparent 100%
-  );
-  animation: scan-line 3s linear infinite;
-  pointer-events: none;
-}
-
-@keyframes scan-line {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(100%); }
-}
+/* Removed scan-line effect from step-1 for cleaner look */
 
 /* Efecto de interferencia para el step 2 */
 .step-2 {
@@ -192,6 +172,14 @@
   22% {
     transform: translate3d(-2px, 0, 0) skewX(-1deg);
   }
+}
+
+/* Prevent scrolling during intro */
+body:has(.intro-container),
+html:has(.intro-container) {
+  overflow: hidden !important;
+  height: 100vh !important;
+  width: 100vw !important;
 }
 
 /* Responsive adjustments */

@@ -28,34 +28,43 @@ const IntroAnimation: React.FC<IntroAnimationProps> = ({ onComplete }) => {
   useEffect(() => {
     const timeouts: ReturnType<typeof setTimeout>[] = [];
 
-    // Step 1: "WHAT IS THIS" - 2 seconds
+    // Prevent scroll during intro
+    document.body.style.overflow = 'hidden';
+    document.documentElement.style.overflow = 'hidden';
+
+    // Step 1: "WHAT IS THIS" - 3 seconds (añadido 1 segundo)
     timeouts.push(setTimeout(() => setCurrentStep(1), 100));
     
-    // Step 2: "WHAT U WAITING" - 2 seconds more
-    timeouts.push(setTimeout(() => setCurrentStep(2), 2200));
+    // Step 2: "WHAT U WAITING" - 3 segundos más (añadido 1 segundo)
+    timeouts.push(setTimeout(() => setCurrentStep(2), 3200));
     
     // Step 3: "O RIGHT, IM LUCAS" - 2 seconds more
-    timeouts.push(setTimeout(() => setCurrentStep(3), 4400));
+    timeouts.push(setTimeout(() => setCurrentStep(3), 6400));
     
     // Start zoom effect on LUCAS - 1.5 seconds after step 3
     timeouts.push(setTimeout(() => {
       console.log('🔍 Starting LUCAS zoom effect');
       setIsZooming(true);
-    }, 5900));
+    }, 7900));
     
     // Transition to black screen during zoom (earlier for more dramatic effect)
     timeouts.push(setTimeout(() => {
       console.log('🖤 Transitioning to black screen');
       setShowBlackScreen(true);
-    }, 6200));
+    }, 8200));
     
     // Complete the intro after zoom effect (longer duration for the massive zoom)
     timeouts.push(setTimeout(() => {
       console.log('🎨 IntroAnimation complete, calling onComplete');
       onComplete();
-    }, 8000));
+    }, 10000));
 
-    return () => timeouts.forEach(clearTimeout);
+    return () => {
+      timeouts.forEach(clearTimeout);
+      // Restore scroll when component unmounts
+      document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
+    };
   }, [onComplete]);
 
   return (
@@ -71,7 +80,8 @@ const IntroAnimation: React.FC<IntroAnimationProps> = ({ onComplete }) => {
         zIndex: 9999,
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'center'
+        justifyContent: 'center',
+        overflow: 'hidden'
       }}
     >
       <div className="intro-text-container">
@@ -98,7 +108,7 @@ const IntroAnimation: React.FC<IntroAnimationProps> = ({ onComplete }) => {
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.5 }}
             >
-              <h1 className="intro-text">WHAT U WAITING</h1>
+              <h1 className="intro-text">WHAT YOU WAITING ?</h1>
             </motion.div>
           )}
           
